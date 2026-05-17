@@ -1,24 +1,26 @@
 name: Daily Market Intel ETL
 
-# 1. When should this run?
 on:
   schedule:
     - cron: "0 8 * * *" # Runs every day at 8:00 AM UTC
-  workflow_dispatch: # This line adds a "Run Now" button on GitHub so we can test it!
+  workflow_dispatch: # "Run Now" button
 
-# 2. What should the robot do?
+# Give the robot security clearance to push code back to the repo
+permissions:
+  contents: write
+
 jobs:
   run-pipeline:
-    runs-on: ubuntu-latest # GitHub will give us a free, temporary Linux server
+    runs-on: ubuntu-latest
     
     steps:
-      # Step A: Download your code onto the server
+      # Step A: Download your code (Updated to v4 to fix warnings)
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step B: Install Python on the server
+      # Step B: Install Python (Updated to v5 to fix warnings)
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
@@ -26,6 +28,15 @@ jobs:
       - name: Install Dependencies
         run: pip install pandas requests
 
-      # Step D: Run your pipeline!
+      # Step D: Run your pipeline
       - name: Run ETL Script
         run: python extract.py
+
+      # Step E: Save the data and push it back to GitHub!
+      - name: Auto-Commit New Data
+        run: |
+          git config --global user.name "Market Intel Bot"
+          git config --global user.email "actions@github.com"
+          git add market_intel_jobs.csv
+          git commit -m "Automated data update: Fresh job market intel" || echo "No changes to commit"
+          git push
