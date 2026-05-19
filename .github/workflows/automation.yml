@@ -30,6 +30,9 @@ jobs:
 
       # Step D: Run your pipeline
       - name: Run ETL Script
+        env: # <--- This tells the robot to unlock the GitHub vault
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python extract.py
 
       # Step E: Save the data and push it back to GitHub!

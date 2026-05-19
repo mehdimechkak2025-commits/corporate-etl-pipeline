@@ -1,38 +1,51 @@
+import os
 import requests
 import pandas as pd
+from dotenv import load_dotenv
 
-print("Connecting to the Global Talent API...")
+print("Initializing Secure Pipeline...")
 
-# --- 1. EXTRACT PHASE ---
-url = "https://www.arbeitnow.com/api/job-board-api"
-response = requests.get(url)
-raw_data = response.json()
-jobs = raw_data['data']
+# --- 1. SECURITY PHASE ---
+load_dotenv()
+supabase_url = os.environ.get("SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_KEY")
 
-print(f"Success! Extracted {len(jobs)} live job postings.")
-print("-" * 30)
+# --- 2. EXTRACT PHASE ---
+print("Extracting live market data...")
+api_url = "https://www.arbeitnow.com/api/job-board-api"
+response = requests.get(api_url)
+jobs = response.json()['data']
 
-
-print("Transforming raw data into a structured Data Table...")
-
-
+# --- 3. TRANSFORM PHASE ---
+print("Structuring data...")
 df = pd.DataFrame(jobs)
-
-
 df_clean = df[['title', 'company_name', 'location', 'remote']]
 
+# Convert to a list of dictionaries for the database
+db_data = df_clean.to_dict(orient='records')
 
-remote_jobs = df_clean[df_clean['remote'] == True]
+# --- 4. LOAD PHASE (REST API BYPASS) ---
+print("Loading data directly into Cloud PostgreSQL via REST...")
 
+# Bulletproof URL formatting: strip hidden spaces and trailing slashes
+clean_url = supabase_url.strip().rstrip('/')
+clean_key = supabase_key.strip()
 
-print(f"Analysis complete: Out of {len(jobs)} jobs, {len(remote_jobs)} are fully remote.")
-print("-" * 30)
-print("Here is a preview of your cleaned, structured database:")
-print(df_clean.head())
+table_url = f"{clean_url}/rest/v1/job_postings"
 
-print("Loading data into a local file...")
+# Create the security badges (Headers) to prove we have permission
+headers = {
+    "apikey": clean_key,
+    "Authorization": f"Bearer {clean_key}",
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
+}
 
+# POST the data directly to the database
+db_response = requests.post(table_url, headers=headers, json=db_data)
 
-df_clean.to_csv('market_intel_jobs.csv', index=False, encoding='utf-8')
-
-print("Pipeline Complete! Your data has been securely saved to 'market_intel_jobs.csv'.")
+# Check if we bypassed the system successfully
+if db_response.status_code == 201:
+    print(f"Massive Success! Bypassed C++ and inserted {len(db_data)} live jobs into Supabase.")
+else:
+    print(f"Server Error {db_response.status_code}: {db_response.text}")
