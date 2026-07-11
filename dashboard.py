@@ -8,7 +8,6 @@ st.title("📊 Autonomous Lead Generation Dashboard")
 st.markdown("Live data securely pulled from Cloud PostgreSQL.")
 
 # --- 2. SECURE DATABASE CONNECTION (CLOUD READY) ---
-# We bypass dotenv entirely and use Streamlit's native secrets manager
 try:
     supabase_url = st.secrets["SUPABASE_URL"]
     supabase_key = st.secrets["SUPABASE_KEY"]
@@ -19,8 +18,6 @@ except KeyError:
 clean_url = supabase_url.strip().rstrip('/')
 clean_key = supabase_key.strip()
 
-# Make sure this matches your actual database table name! 
-# (You previously used market_intel_jobs, update this if needed)
 table_url = f"{clean_url}/rest/v1/market_intel_jobs"
 
 headers = {
@@ -33,7 +30,7 @@ headers = {
 def fetch_data():
     try:
         response = requests.get(f"{table_url}?select=*", headers=headers)
-        response.raise_for_status() # This acts as a security guard to catch bad URLs/Keys
+        response.raise_for_status()
         return pd.DataFrame(response.json())
     except requests.exceptions.RequestException as e:
         st.error(f"Failed to pull data from Supabase. Error details: {e}")
@@ -72,7 +69,6 @@ if not df.empty:
     st.divider()
 
     st.subheader("Interactive Intelligence Feed")
-    # Verify these columns match exactly what is inside your Supabase table
     st.dataframe(filtered_df, use_container_width=True, hide_index=True)
     
 else:
