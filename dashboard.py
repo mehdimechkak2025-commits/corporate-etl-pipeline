@@ -73,8 +73,7 @@ if not df.empty:
 
     st.subheader("Interactive Intelligence Feed")
     # Verify these columns match exactly what is inside your Supabase table
-    display_df = filtered_df[['title', 'company_name', 'location', 'remote']]
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
     
 else:
     st.warning("The database is currently empty or unreachable.")
