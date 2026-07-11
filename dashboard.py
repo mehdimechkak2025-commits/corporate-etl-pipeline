@@ -21,7 +21,7 @@ clean_key = supabase_key.strip()
 
 # Make sure this matches your actual database table name! 
 # (You previously used market_intel_jobs, update this if needed)
-table_url = f"{clean_url}/rest/v1/job_postings"
+table_url = f"{clean_url}/rest/v1/market_intel_jobs"
 
 headers = {
     "apikey": clean_key,
