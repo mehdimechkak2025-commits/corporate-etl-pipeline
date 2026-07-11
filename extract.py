@@ -32,7 +32,7 @@ db_data = df_clean.to_dict(orient='records')
 
 # --- 3. DATABASE LOAD PHASE ---
 print("Syncing with Cloud PostgreSQL...")
-table_url = f"{clean_url}/rest/v1/job_postings"
+table_url = f"{clean_url}/rest/v1/market_intel_jobs"
 headers = {
     "apikey": clean_key,
     "Authorization": f"Bearer {clean_key}",
